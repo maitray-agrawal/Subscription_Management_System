@@ -1,7 +1,7 @@
 # Brightloop Subscription Management System — Discount Engine Specification
 
 ## Document Overview
-- **Document Version:** 1.0.0
+- **Document Version:** 1.1.0
 - **Status:** Approved Baseline / Active
 - **Module Ownership:** `brightloop_discount`, `brightloop_billing`, `brightloop_subscription`
 - **Target ERP Platform:** Odoo 19 (Community/Enterprise)
@@ -76,3 +76,15 @@ flowchart TD
 | **REQ-DISC-010** | **Automatic Recurring Application** | An active subscription discount must persist across recurring billing cycles as long as validity conditions hold. | SYSTEM (Cron) | Recurring invoice generator automatically copies qualifying discount rules from subscription to generated invoice. | `brightloop_discount`, `brightloop_billing` | 1. No manual re-entry required per cycle.<br>2. Each application increments the cycle counter. |
 | **REQ-DISC-011** | **Expiration on Exact Billing Date Boundary** | If a discount expires on `2026-11-30 23:59:59` and invoice is generated on `2026-11-30`, discount must be applied; if generated on `2026-12-01`, discount is excluded. | SYSTEM (Cron) | Date comparison evaluates timestamps inclusively at date level: `invoice_date <= discount.end_date`. | `brightloop_discount` | 1. Billing date exactly on end date receives discount.<br>2. Billing date 1 day after end date drops discount cleanly. |
 | **REQ-DISC-012** | **Discount Stacking & Priority** | Multiple discounts applied to the same subscription must follow explicit precedence (Non-stackable vs Stackable). | MGR | Non-stackable discounts override standard discounts; stackable discounts compute compound or sequential deductions. | `brightloop_discount` | 1. By default, discount rules are mutually exclusive (highest savings wins).<br>2. If stackable flag is set, percentage is applied sequentially or additively as configured. |
+
+---
+
+### 2.4 Advanced Lifecycle & Failure Recovery Scenarios
+
+| Req ID | Parameter / Scenario | Exact Expected Behaviour | User Role | Expected System Result | Relevant Module | Acceptance Criteria |
+|---|---|---|---|---|---|---|
+| **REQ-DISC-013** | **Subscription Quantity Amendment Impact** | When customer or staff increases or decreases subscription quantity mid-term, eligibility for quantity-based discounts must dynamically re-evaluate. | STAF, CUST | System checks revised quantity against `min_quantity`; if seats fall below threshold, discount is immediately revoked. | `brightloop_discount`, `brightloop_subscription` | 1. Dropping from 10 to 8 seats on plan with 10-seat MOQ discount drops discount.<br>2. Chatter logs reason for discount revocation. |
+| **REQ-DISC-014** | **Product-Specific Discount Non-Matching** | If a product-specific discount is configured but the subscription contains no matching product line, the discount must be omitted without raising an error. | SYSTEM, STAF | System evaluates matching line items; zero matching lines results in zero discount applied. | `brightloop_discount` | 1. Invoice generated successfully at standard rates.<br>2. No false discount deduction applied to non-matching lines. |
+| **REQ-DISC-015** | **Regeneration After Invoice Failure** | If an invoice creation fails or draft is cancelled and regenerated, the discount `cycles_applied_count` must not be falsely double-incremented. | SYSTEM (Cron) | Cycle counter is incremented strictly on invoice posting (`action_post`), never on draft instantiation. | `brightloop_discount`, `brightloop_billing` | 1. Cancelling a draft invoice does not consume an introductory discount cycle.<br>2. Regenerated invoice receives identical discount. |
+| **REQ-DISC-016** | **Paused Subscription Discount Freezing** | During a subscription pause, the calendar duration of introductory discounts with fixed cycle limits must freeze. | SYSTEM (Cron) | `cycles_applied_count` remains static; upon resumption, remaining cycles resume billing normally. | `brightloop_discount`, `brightloop_subscription` | 1. A 3-cycle discount paused during Month 2 resumes with Cycle 2 upon restart.<br>2. No cycle loss occurs during pause. |
+| **REQ-DISC-017** | **Contract Renewal vs Discount Carryover** | When a contract term auto-renews, introductory discounts that have reached their cycle cap must NOT be renewed, while permanent plan discounts carry over. | SYSTEM (Cron) | Renewal engine evaluates `is_permanent_discount`; introductory promo codes expire at end of term. | `brightloop_discount`, `brightloop_subscription` | 1. Expired introductory discounts omitted from renewal contract lines.<br>2. Permanent multi-year partner rebates persist. |

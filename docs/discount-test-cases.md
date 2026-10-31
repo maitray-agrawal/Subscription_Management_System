@@ -1,9 +1,9 @@
 # Brightloop Subscription Management System — Discount Engine QA Test Cases
 
 ## Document Overview
-- **Document Version:** 1.0.0
+- **Document Version:** 1.1.0
 - **Status:** Baseline Ready for Execution (Not Run)
-- **Scope:** Normal, Boundary, Negative, and Permission test cases covering fixed and percentage discounts, eligibility thresholds, usage limits, cycle expiration, and stacking rules.
+- **Scope:** Normal, Boundary, Negative, and Permission test cases covering fixed and percentage discounts, eligibility thresholds, usage limits, cycle expiration, quantity adjustments, and stacking rules.
 - **Traceability:** Directly maps to `docs/discount-requirements.md`.
 
 ---
@@ -13,11 +13,12 @@
 | Category Code | Functional Area | Normal | Boundary | Negative | Permission | Total Test Cases |
 |---|---|---|---|---|---|---|
 | **TC-DISC-TYPE** | Discount Types (Percentage & Fixed) | 2 | 2 | 2 | 1 | 7 |
-| **TC-DISC-THOLD**| Minimum Value & Quantity Thresholds | 2 | 2 | 1 | 0 | 5 |
+| **TC-DISC-THOLD**| Minimum Value & Quantity Thresholds | 2 | 3 | 1 | 0 | 6 |
 | **TC-DISC-TIME** | Date Ranges & Exact Billing Date Boundary | 2 | 2 | 1 | 0 | 5 |
-| **TC-DISC-LIMIT**| Usage Caps & Recurring Cycle Exhaustion | 3 | 2 | 1 | 1 | 7 |
-| **TC-DISC-SCOPE**| Product-Specific vs Subscription-Wide | 2 | 1 | 1 | 0 | 4 |
-| **Total** | | **11** | **9** | **7** | **1** | **28** |
+| **TC-DISC-LIMIT**| Usage Caps & Recurring Cycle Exhaustion | 4 | 2 | 1 | 1 | 8 |
+| **TC-DISC-SCOPE**| Product-Specific vs Subscription-Wide | 2 | 1 | 2 | 0 | 5 |
+| **TC-DISC-LIFE** | Lifecycle Amendments, Pause & Renewal | 2 | 1 | 0 | 0 | 3 |
+| **Total** | | **14** | **11** | **7** | **2** | **34** |
 
 ---
 
@@ -126,6 +127,21 @@
 - **Actual Result:** 
 - **Status:** Not Run
 
+#### TC-DISC-014 (Boundary): Mid-Term Quantity Downgrade Revoking Discount
+- **Traceability:** REQ-DISC-004, REQ-DISC-013
+- **Test Type:** Boundary
+- **Preconditions:** Active subscription with 12 seats receiving 20% volume discount.
+- **Test Data:** Customer amends subscription contract to 8 seats.
+- **Execution Steps:**
+  1. Process subscription amendment reducing seats from 12 to 8.
+  2. Trigger next recurring billing cycle.
+- **Expected Result:**
+  - Revised subtotal: $8 \times \$50.00 = \$400.00$.
+  - Volume discount revoked because $8 < 10$.
+  - Invoice generated with 0% discount.
+- **Actual Result:** 
+- **Status:** Not Run
+
 ---
 
 ### 2.3 Date Ranges & Billing Date Boundaries (TC-DISC-TIME)
@@ -203,5 +219,73 @@
 - **Execution Steps:**
   1. Customer creates a second subscription quote and inputs `ONEPERUSER`.
 - **Expected Result:** Application blocked; error message: `"You have already redeemed this promotion on an existing subscription."`
+- **Actual Result:** 
+- **Status:** Not Run
+
+#### TC-DISC-016 (Boundary): Cycle Counter Preserved on Draft Invoice Cancellation
+- **Traceability:** REQ-DISC-008, REQ-DISC-015
+- **Test Type:** Boundary
+- **Preconditions:** Introductory discount in Cycle 1 of 3. Draft invoice generated but cancelled before posting.
+- **Test Data:** Draft invoice `INV/DRAFT/001`.
+- **Execution Steps:**
+  1. Staff cancels draft invoice.
+  2. Regenerate invoice for same period.
+- **Expected Result:**
+  - `cycles_applied_count` is not double-incremented; remains at cycle 1.
+  - Regenerated invoice receives 50% discount.
+- **Actual Result:** 
+- **Status:** Not Run
+
+---
+
+### 2.5 Scope & Lifecycle Scenarios (TC-DISC-SCOPE & TC-DISC-LIFE)
+
+#### TC-DISC-013 (Boundary): Multiple Discounts Eligible — Mutual Exclusion
+- **Traceability:** REQ-DISC-012
+- **Test Type:** Boundary
+- **Preconditions:** Subscription qualifies for both `DISC10` (10% off) and `DISC15` (15% off). Both are non-stackable.
+- **Test Data:** Order subtotal $500.00.
+- **Execution Steps:**
+  1. Apply discount engine rule evaluation.
+- **Expected Result:** System applies highest savings rule (`DISC15` = $75 off); suppresses lower discount rule (`DISC10`).
+- **Actual Result:** 
+- **Status:** Not Run
+
+#### TC-DISC-015 (Negative): Product-Specific Discount with Mismatched Lines
+- **Traceability:** REQ-DISC-009, REQ-DISC-014
+- **Test Type:** Negative
+- **Preconditions:** Discount rule targets product `AI Addon Module`. Subscription lines contain only `Cloud Hosting`.
+- **Test Data:** Promo code `AI_DISCOUNT_30`.
+- **Execution Steps:**
+  1. Input `AI_DISCOUNT_30` on subscription containing only `Cloud Hosting`.
+- **Expected Result:** Discount applied to zero lines; total invoice amount equals standard hosting price; inline notice: `"No eligible products found for this discount."`
+- **Actual Result:** 
+- **Status:** Not Run
+
+#### TC-DISC-017 (Normal): Paused Subscription Freezes Discount Cycle Duration
+- **Traceability:** REQ-DISC-016
+- **Test Type:** Normal
+- **Preconditions:** 3-month introductory discount. Cycle 1 completed in October. Subscription paused for November and December.
+- **Test Data:** Subscription resumes January 1.
+- **Execution Steps:**
+  1. Resume subscription on January 1.
+  2. Generate Cycle 2 invoice on January 1.
+- **Expected Result:**
+  - January invoice billed with 50% discount as Cycle 2 of 3.
+  - Cycle counter advances from 1 to 2.
+- **Actual Result:** 
+- **Status:** Not Run
+
+#### TC-DISC-018 (Normal): Subscription Renewal Drops Expired Introductory Promo
+- **Traceability:** REQ-DISC-017
+- **Test Type:** Normal
+- **Preconditions:** 12-month subscription with 3-month intro discount (`INTRO30`). 12 months complete.
+- **Test Data:** Contract auto-renews for Year 2.
+- **Execution Steps:**
+  1. Trigger auto-renewal contract extension cron.
+  2. Inspect renewal subscription lines and first renewal invoice.
+- **Expected Result:**
+  - Year 2 contract lines exclude `INTRO30`.
+  - Renewal invoice bills standard undiscounted annual rate.
 - **Actual Result:** 
 - **Status:** Not Run
