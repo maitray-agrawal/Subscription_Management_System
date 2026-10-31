@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.log
+*.pid
+.env
+.env.*
+!.env.example
+config/odoo.conf
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+filestore/
