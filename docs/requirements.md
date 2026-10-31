@@ -1,103 +1,144 @@
-# Functional and Non-Functional Requirements
-## Brightloop Subscription Management System
+# Brightloop Subscription Management System
 
-### Source of Truth
-This document details all business and technical requirements derived directly from the assignment document (`docs/Subscription_Management_System.pdf`).
+## Source of Truth
+
+This document consolidates the functional and non-functional requirements derived from the original assignment document (`docs/Subscription_Management_System.pdf`) and the supporting module specifications and QA documentation.
 
 ---
 
-### 1. User Roles & Access Control
-- **Administrator**:
+## 1. User Roles & Access Control
+
+- **Administrator**
   - Full system control.
   - Exclusive authority to invite and configure internal staff members.
-  - Setup products, variant pricing, subscription plans, taxes, and discount rules.
-  - Full oversight over billing, payments, and financial dashboards.
-- **Internal Staff**:
-  - Day-to-day operational handling of subscriptions and quotations.
+  - Configure products, variant pricing, subscription plans, taxes, and discount rules.
+  - Full oversight of billing, payments, and financial dashboards.
+- **Internal Staff**
+  - Handle day-to-day subscriptions and quotations.
   - View authorized subscription and invoice records.
-  - Execute allowed operational actions (pause, resume, renew, close, register payments).
-  - Explicitly restricted from administrative configuration (cannot modify plans, create discount rules, or manage staff users).
-- **Customer (Portal User)**:
-  - Self-service portal access.
-  - Registration with unique email and strict password policy.
-  - View only own subscriptions, details, and invoice history.
-  - Strict ownership-based access control; absolutely no access to administrative functions or other customers' records.
+  - Execute permitted operational actions, including pause, resume, renew, close, and register payments.
+  - Cannot modify administrative configuration, create discount rules, or manage staff users.
+- **Customer (Portal User)**
+  - Access the self-service portal.
+  - Register using a unique email and the required password policy.
+  - View only their own subscriptions, details, and invoice history.
+  - Must not access administrative functions or other customers' records.
 
 ---
 
-### 2. Customer Registration & Authentication
-- Self-registration on web portal with email and password.
-- **Email Validation**: Enforce global uniqueness across all system users and partners.
-- **Password Policy**:
-  - Minimum length strictly greater than 8 characters (>= 9 characters).
-  - Must contain at least one uppercase letter (`[A-Z]`).
-  - Must contain at least one lowercase letter (`[a-z]`).
-  - Must contain at least one special character (`[!@#$%^&*(),.?":{}|<>]`).
-- **Password Reset**:
-  - Secure tokenized reset link sent to registered email via standard Odoo mail mechanisms.
+## 2. Customer Registration & Authentication
+
+- Self-registration through the web portal using email and password.
+- **Email validation:** Enforce global uniqueness across system users and partners.
+- **Password policy:**
+  - Minimum length of 9 characters.
+  - At least one uppercase letter (`[A-Z]`).
+  - At least one lowercase letter (`[a-z]`).
+  - At least one special character (`[!@#$%^&*(),.?":{}|<>]`).
+- **Password reset:** Secure tokenized reset link sent to the registered email using standard Odoo mail mechanisms.
 
 ---
 
-### 3. Products & Variants
-- Admin adds products with: Name, Type, Sales Price, Cost Price, and Notes.
-- Support product variants (e.g., Brand attribute).
-- Configurable price extra for attributes (e.g., selecting the "Odoo" brand adds 560 to the base price).
+## 3. Products & Variants
+
+- Administrators can add products with name, type, sales price, cost price, and notes.
+- Support product variants, such as a Brand attribute.
+- Support configurable price extras for attributes. For example, selecting the "Odoo" brand adds 560 to the base price.
 
 ---
 
-### 4. Subscription Plans
-- Configurable billing frequency: **Daily**, **Weekly**, **Monthly**, and **Yearly**.
+## 4. Subscription Plans
+
+- Configurable billing frequency: daily, weekly, monthly, and yearly.
 - Minimum required quantity per plan.
 - Availability validity dates (`date_start`, `date_end`).
-- Auto-closure option: Automatically close subscriptions when expiry date is reached.
-- Granular administrative permissions per plan:
-  - `allow_early_closure`: Permitted early closure before expiry.
-  - `allow_pause`: Permitted temporary pause and resume.
-  - `allow_renewal`: Permitted contract renewal.
+- Auto-closure option to close subscriptions when the expiry date is reached.
+- Configurable permissions:
+  - `allow_early_closure`: permits early closure before expiry.
+  - `allow_pause`: permits temporary pause and resume.
+  - `allow_renewal`: permits contract renewal.
 
 ---
 
-### 5. Quotation Templates & Subscriptions
-- **Quotation Templates**:
-  - Pre-packaged templates with default plan and product lines.
-  - Set validity duration in days.
-- **Subscription Records**:
-  - Unique subscription sequence number.
-  - Customer (`res.partner`), Plan, Start Date, Expiry Date, Payment Terms.
-  - Detailed product lines: Product, Quantity, Unit Price, Taxes, Subtotal.
-- **Lifecycle State Machine**:
-  - Required flow: `Draft` → `Quotation` → `Confirmed` → `Active` → `Closed`.
-  - Pause and Resume states/flags.
-  - Strict prevention of invalid state transitions.
+## 5. Quotation Templates & Subscriptions
+
+### Quotation Templates
+
+- Preconfigured templates with default plan and product lines.
+- Configurable validity duration in days.
+
+### Subscription Records
+
+- Unique subscription sequence number.
+- Customer (`res.partner`), plan, start date, expiry date, and payment terms.
+- Product lines containing product, quantity, unit price, taxes, and subtotal.
+
+### Lifecycle State Machine
+
+Required flow:
+
+`Draft` → `Quotation` → `Confirmed` → `Active` → `Closed`
+
+- Support pause and resume states or flags.
+- Prevent invalid state transitions.
 
 ---
 
-### 6. Billing & Accounting
-- Automated recurring invoice generation via scheduled action (`ir.cron`).
-- Calculation of exact billing periods and next billing date pointers.
-- Reuses native `account.move` (`out_invoice`) and native `account.tax` calculations.
+## 6. Billing & Accounting
+
+- Automated recurring invoice generation through a scheduled action (`ir.cron`).
+- Accurate billing-period calculation and next-billing-date tracking.
+- Reuse native `account.move` (`out_invoice`) and native `account.tax` calculations.
 - Invoice actions: Confirm (Post), Cancel, Send, and Print.
-- Zero tolerance for duplicate invoicing or skipped billing intervals.
-- Billing audit log (`brightloop.billing.log`) recording execution date, periods, invoice ID, status, and error details.
-- Native payment registration via `account.payment.register` ensuring proper journal entries and line reconciliation. Direct modification of `payment_state` is strictly forbidden.
+- Prevent duplicate invoicing and skipped billing intervals.
+- Maintain a billing audit log (`brightloop.billing.log`) recording execution date, periods, invoice ID, status, and error details.
+- Use native payment registration through `account.payment.register`, ensuring proper journal entries and reconciliation.
+- Direct modification of `payment_state` is prohibited.
 
 ---
 
-### 7. Discount Engine
-- Admin-only discount creation.
-- Discount types: Fixed amount or Percentage.
-- Eligibility requirements: Minimum purchase amount, minimum item quantity, active date range.
-- Usage limits: Global usage cap tracking (`usage_limit` vs `current_usage_count`).
-- Scope: Whole subscription or specific product lines.
-- Automatic application: Automatically applied as discount lines on eligible recurring invoices until expired or exhausted.
+## 7. Discount Engine
+
+- Discount creation restricted to administrators.
+- Discount types: fixed amount and percentage.
+- Eligibility requirements:
+  - Minimum purchase amount.
+  - Minimum item quantity.
+  - Active date range.
+- Usage limits through `usage_limit` and `current_usage_count`.
+- Scope: entire subscription or specific product lines.
+- Automatically apply eligible discounts to recurring invoices until expiry or exhaustion.
 
 ---
 
-### 8. Financial Dashboard & Performance
-- Real-time KPI Cards:
-  - Active subscription count.
-  - Invoiced revenue vs. Posted revenue vs. Cash received vs. Outstanding receivables.
-  - Overdue invoices count and total amount.
-  - Subscription status breakdown.
-- Date filters (This Month, Last Month, This Quarter, Custom Range).
-- Non-functional requirement: High-performance SQL aggregation responding in under 2 seconds even with thousands of subscriptions.
+## 8. Financial Dashboard & Performance
+
+### Dashboard KPIs
+
+- Active subscription count.
+- Invoiced revenue.
+- Posted revenue.
+- Cash received.
+- Outstanding receivables.
+- Overdue invoice count and total amount.
+- Subscription status breakdown.
+
+### Filters
+
+- This Month.
+- Last Month.
+- This Quarter.
+- Custom Date Range.
+
+### Performance Requirement
+
+Financial dashboard queries must respond in under 2 seconds, including when the database contains thousands of subscriptions.
+
+---
+
+## 9. Complete Documentation Index
+
+### Stage 4: Billing and Accounting
+
+- Billing and invoicing specification: `docs/billing-requirements.md`
+- Billing, payment, and accounting QA test cases: `docs/billing-test-c
