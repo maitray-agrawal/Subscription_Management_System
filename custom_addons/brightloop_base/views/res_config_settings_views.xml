@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.brightloop.base</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="50"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Subscriptions" string="Subscriptions" name="brightloop_base">
+                    <block title="Subscription Lifecycle" name="brightloop_lifecycle_settings">
+                        <setting id="brightloop_auto_close_setting" help="Grace period before late or expired subscriptions are automatically closed.">
+                            <field name="brightloop_auto_close_days"/>
+                        </setting>
+                        <setting id="brightloop_daily_billing_setting" help="Allow plans to bill customers on a daily frequency.">
+                            <field name="brightloop_allow_daily_billing"/>
+                        </setting>
+                    </block>
+                    <block title="Billing and Invoicing" name="brightloop_billing_settings">
+                        <setting id="brightloop_invoice_auto_send_setting" help="Automatically email generated recurring invoices to the customer.">
+                            <field name="brightloop_invoice_auto_send"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_brightloop_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+        <field name="context">{'module': 'brightloop_base', 'bin_size': False}</field>
+    </record>
+</odoo>

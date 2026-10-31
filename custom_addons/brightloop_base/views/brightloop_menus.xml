@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Top-Level Main Menu -->
+    <menuitem id="menu_brightloop_root"
+              name="Subscriptions"
+              web_icon="brightloop_base,static/description/icon.png"
+              sequence="25"/>
+
+    <!-- Operational Root: Subscriptions -->
+    <menuitem id="menu_brightloop_subscriptions_root"
+              name="Subscriptions"
+              parent="menu_brightloop_root"
+              sequence="10"
+              groups="brightloop_base.group_brightloop_user"/>
+
+    <!-- Operational Root: Invoicing & Billing -->
+    <menuitem id="menu_brightloop_invoicing_root"
+              name="Invoicing"
+              parent="menu_brightloop_root"
+              sequence="20"
+              groups="brightloop_base.group_brightloop_user"/>
+
+    <!-- Operational Root: Reporting & Analytics -->
+    <menuitem id="menu_brightloop_reporting_root"
+              name="Reporting"
+              parent="menu_brightloop_root"
+              sequence="30"
+              groups="brightloop_base.group_brightloop_user"/>
+
+    <!-- Administrative Root: Configuration (Admin Only) -->
+    <menuitem id="menu_brightloop_configuration_root"
+              name="Configuration"
+              parent="menu_brightloop_root"
+              sequence="100"
+              groups="brightloop_base.group_brightloop_admin"/>
+
+    <!-- Settings Menuitem -->
+    <menuitem id="menu_brightloop_settings"
+              name="Settings"
+              parent="menu_brightloop_configuration_root"
+              sequence="10"
+              action="action_brightloop_config_settings"
+              groups="brightloop_base.group_brightloop_admin"/>
+</odoo>
