@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Subscriptions Operational Menus -->
+    <menuitem id="menu_brightloop_quotations"
+              name="Quotations"
+              parent="brightloop_base.menu_brightloop_subscriptions_root"
+              action="action_brightloop_quotation"
+              sequence="10"/>
+
+    <menuitem id="menu_brightloop_subscriptions_sub"
+              name="Subscriptions"
+              parent="brightloop_base.menu_brightloop_subscriptions_root"
+              action="action_brightloop_subscription"
+              sequence="20"/>
+
+    <menuitem id="menu_brightloop_products"
+              name="Subscription Products"
+              parent="brightloop_base.menu_brightloop_subscriptions_root"
+              action="product.product_template_action"
+              sequence="30"/>
+
+    <!-- Configuration Menus (Admin Only) -->
+    <menuitem id="menu_brightloop_plans"
+              name="Subscription Plans"
+              parent="brightloop_base.menu_brightloop_configuration_root"
+              action="action_brightloop_subscription_plan"
+              sequence="20"
+              groups="brightloop_base.group_brightloop_admin"/>
+
+    <menuitem id="menu_brightloop_templates"
+              name="Quotation Templates"
+              parent="brightloop_base.menu_brightloop_configuration_root"
+              action="action_brightloop_quotation_template"
+              sequence="30"
+              groups="brightloop_base.group_brightloop_admin"/>
+</odoo>

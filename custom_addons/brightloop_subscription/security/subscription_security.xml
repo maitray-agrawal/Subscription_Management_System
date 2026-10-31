@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Portal Customer: Read Own Subscriptions Only -->
+        <record id="brightloop_subscription_rule_portal" model="ir.rule">
+            <field name="name">Portal Customer: View Own Subscriptions Only</field>
+            <field name="model_id" ref="model_brightloop_subscription"/>
+            <field name="domain_force">['|', ('partner_id', '=', user.partner_id.id), ('partner_id', 'child_of', user.partner_id.commercial_partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('brightloop_base.group_brightloop_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Portal Customer: Read Own Subscription Lines Only -->
+        <record id="brightloop_subscription_line_rule_portal" model="ir.rule">
+            <field name="name">Portal Customer: View Own Subscription Lines Only</field>
+            <field name="model_id" ref="model_brightloop_subscription_line"/>
+            <field name="domain_force">['|', ('subscription_id.partner_id', '=', user.partner_id.id), ('subscription_id.partner_id', 'child_of', user.partner_id.commercial_partner_id.id)]</field>
+            <field name="groups" eval="[(4, ref('brightloop_base.group_brightloop_portal'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Multi-Company Rule: Subscriptions -->
+        <record id="brightloop_subscription_rule_company" model="ir.rule">
+            <field name="name">Brightloop Subscription Multi-Company</field>
+            <field name="model_id" ref="model_brightloop_subscription"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!-- Multi-Company Rule: Plans -->
+        <record id="brightloop_subscription_plan_rule_company" model="ir.rule">
+            <field name="name">Brightloop Subscription Plan Multi-Company</field>
+            <field name="model_id" ref="model_brightloop_subscription_plan"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+    </data>
+</odoo>

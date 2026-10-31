@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Quotation Template List View -->
+    <record id="brightloop_quotation_template_view_list" model="ir.ui.view">
+        <field name="name">brightloop.quotation.template.list</field>
+        <field name="model">brightloop.quotation.template</field>
+        <field name="arch" type="xml">
+            <list string="Quotation Templates">
+                <field name="name"/>
+                <field name="plan_id"/>
+                <field name="validity_days"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Quotation Template Form View -->
+    <record id="brightloop_quotation_template_view_form" model="ir.ui.view">
+        <field name="name">brightloop.quotation.template.form</field>
+        <field name="model">brightloop.quotation.template</field>
+        <field name="arch" type="xml">
+            <form string="Quotation Template">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name" string="Template Name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Starter SaaS Offering or Enterprise Annual"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="plan_id"/>
+                            <field name="validity_days"/>
+                        </group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="lines" string="Predefined Lines">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="terms" string="Terms &amp; Conditions">
+                            <field name="note" placeholder="Standard quotation terms and SLA guidelines..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Quotation Template Action -->
+    <record id="action_brightloop_quotation_template" model="ir.actions.act_window">
+        <field name="name">Quotation Templates</field>
+        <field name="res_model">brightloop.quotation.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create quotation templates to standardize pricing and product lines!
+            </p>
+        </field>
+    </record>
+</odoo>

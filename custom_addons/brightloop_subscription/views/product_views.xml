@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Template Form View Extension -->
+    <record id="product_template_form_view_inherit_brightloop" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.brightloop</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-block">
+                    <field name="is_subscription_product"/>
+                    <label for="is_subscription_product"/>
+                </span>
+            </xpath>
+            <xpath expr="//page[@name='general_information']" position="after">
+                <page name="subscription_settings" string="Subscription" invisible="not is_subscription_product">
+                    <group>
+                        <group name="sub_plan_group">
+                            <field name="subscription_plan_id"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Product Template Search View Extension -->
+    <record id="product_template_search_view_inherit_brightloop" model="ir.ui.view">
+        <field name="name">product.template.search.inherit.brightloop</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_sell']" position="after">
+                <filter string="Can be Subscribed" name="filter_to_subscribe" domain="[('is_subscription_product', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
