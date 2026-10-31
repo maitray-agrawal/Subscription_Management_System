@@ -42,3 +42,4 @@
               action="action_brightloop_config_settings"
               groups="brightloop_base.group_brightloop_admin"/>
 </odoo>
+

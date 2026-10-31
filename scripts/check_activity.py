@@ -18,3 +18,4 @@ print(f"Active connections on brightloop_dev: {len(rows)}")
 for r in rows:
     print(r[0], r[1], r[2], r[3], str(r[4])[:100])
 conn.close()
+

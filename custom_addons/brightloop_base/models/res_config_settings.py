@@ -23,3 +23,4 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='brightloop.allow_daily_billing',
         help="Allows subscription plans to be configured with daily billing intervals."
     )
+

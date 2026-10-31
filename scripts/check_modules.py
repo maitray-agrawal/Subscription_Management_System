@@ -16,3 +16,4 @@ cur.execute("SELECT name, state FROM ir_module_module WHERE name LIKE '%brightlo
 rows = cur.fetchall()
 print("Brightloop modules in db:", rows)
 conn.close()
+
